@@ -27,6 +27,17 @@ func NewUserHandler(userRepository repository.UserRepository, validate *validato
 	}
 }
 
+// @Summary      Register a new user
+// @Description  Creates a new user account with the provided details.
+// @Tags         Users
+// @Accept       json
+// @Produce      json
+// @Param        request  body      dto.UserRegisterRequest  true  "Register Request"
+// @Success      201      {object}  dto.UserRegisterResponse
+// @Failure      400      {object}  map[string]string
+// @Failure      409      {object}  map[string]string
+// @Failure      500      {object}  map[string]string
+// @Router       /users/register [post]
 func (handler *UserHandler) Register(c *fiber.Ctx) error {
 	requestBody := new(dto.UserRegisterRequest)
 
@@ -89,6 +100,18 @@ func (handler *UserHandler) Register(c *fiber.Ctx) error {
 	})
 }
 
+// @Summary      User login
+// @Description  Authenticates a user and returns a JWT token.
+// @Tags         Users
+// @Accept       json
+// @Produce      json
+// @Param        request  body      dto.UserLoginRequest  true  "Login Request"
+// @Success      200      {object}  map[string]string
+// @Failure      400      {object}  map[string]string
+// @Failure      401      {object}  map[string]string
+// @Failure      404      {object}  map[string]string
+// @Failure      500      {object}  map[string]string
+// @Router       /users/login [post]
 func (uh *UserHandler) Login(c *fiber.Ctx) error {
 	requestBody := new(dto.UserLoginRequest)
 

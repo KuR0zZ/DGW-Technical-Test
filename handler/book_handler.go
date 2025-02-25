@@ -26,6 +26,19 @@ func NewBookHandler(bookRepository repository.BookRepository, validate *validato
 	}
 }
 
+// @Summary      Create book
+// @Description  Add new book
+// @Tags         Books
+// @Accept       json
+// @Produce      json
+// @Param Authorization header string true "With the bearer started"
+// @Param        request  body      dto.BookCreateRequest  true  "Create Request"
+// @Success      201      {object}  dto.BookCreateResponse
+// @Failure      400      {object}  map[string]string
+// @Failure      401      {object}  map[string]string
+// @Failure      500      {object}  map[string]string
+// @Router       /books [post]
+// @Security     Bearer
 func (handler *BookHandler) Create(c *fiber.Ctx) error {
 	requestBody := new(dto.BookCreateRequest)
 
@@ -77,6 +90,20 @@ func (handler *BookHandler) Create(c *fiber.Ctx) error {
 	})
 }
 
+// @Summary      Update book
+// @Description  Update book with id
+// @Tags         Books
+// @Accept       json
+// @Produce      json
+// @Param Authorization header string true "With the bearer started"
+// @Param        request  body      dto.BookUpdateRequest  true  "Update Request"
+// @Success      200      {object}  map[string]interface{}
+// @Failure      400      {object}  map[string]string
+// @Failure      401      {object}  map[string]string
+// @Failure      404      {object}  map[string]string
+// @Failure      500      {object}  map[string]string
+// @Router       /books/:id [put]
+// @Security     Bearer
 func (handler *BookHandler) Update(c *fiber.Ctx) error {
 	id := c.Params("id")
 
@@ -131,6 +158,18 @@ func (handler *BookHandler) Update(c *fiber.Ctx) error {
 	})
 }
 
+// @Summary      Delete book
+// @Description  Delete book with id
+// @Tags         Books
+// @Accept       json
+// @Produce      json
+// @Param Authorization header string true "With the bearer started"
+// @Success      200      {object}  map[string]string
+// @Failure      401      {object}  map[string]string
+// @Failure      404      {object}  map[string]string
+// @Failure      500      {object}  map[string]string
+// @Router       /books/:id [delete]
+// @Security     Bearer
 func (handler *BookHandler) Delete(c *fiber.Ctx) error {
 	id := c.Params("id")
 
@@ -160,6 +199,16 @@ func (handler *BookHandler) Delete(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{"message": fmt.Sprintf("Successfully deleted book with ID %d", bookId)})
 }
 
+// @Summary      Get all books
+// @Description  Retrieves a list of books
+// @Tags         Books
+// @Accept       json
+// @Produce      json
+// @Param Authorization header string true "With the bearer started"
+// @Success      200      {array}   entity.Book
+// @Failure      500      {object}  map[string]string
+// @Router       /books [get]
+// @Security     Bearer
 func (handler *BookHandler) FindAll(c *fiber.Ctx) error {
 	books, err := handler.BookRepository.FindAll()
 	if err != nil {
@@ -169,6 +218,17 @@ func (handler *BookHandler) FindAll(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(books)
 }
 
+// @Summary      Get book by id
+// @Description  Retrieves a book by id
+// @Tags         Books
+// @Accept       json
+// @Produce      json
+// @Param Authorization header string true "With the bearer started"
+// @Success      200      {object}  entity.Book
+// @Failure      404      {object}  map[string]string
+// @Failure      500      {object}  map[string]string
+// @Router       /books/:id [get]
+// @Security     Bearer
 func (handler *BookHandler) FindById(c *fiber.Ctx) error {
 	id := c.Params("id")
 
