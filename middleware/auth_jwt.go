@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"os"
 	"strings"
 
 	"github.com/gofiber/fiber/v2"
@@ -23,7 +24,7 @@ func CustomJwtMiddleware() fiber.Handler {
 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 				return nil, c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Unexpected signing method"})
 			}
-			return []byte("your-secret-key"), nil
+			return []byte(os.Getenv("JWT_SECRET")), nil
 		})
 
 		if err != nil || !token.Valid {
