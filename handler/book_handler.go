@@ -1,9 +1,13 @@
 package handler
 
 import (
+	"database/sql"
 	"dgw-technical-test/dto"
 	"dgw-technical-test/entity"
 	"dgw-technical-test/repository"
+	"errors"
+	"net/http"
+	"strconv"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
@@ -62,7 +66,46 @@ func (handler *BookHandler) Create(c *fiber.Ctx) error {
 }
 
 func (handler *BookHandler) Update(c *fiber.Ctx) error {
-	return nil
+	id := c.Params("id")
+
+	book_id, err := strconv.Atoi(id)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	requestBody := new(dto.BookUpdateRequest)
+
+	if err := c.BodyParser(requestBody); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	if err := handler.Validate.Struct(requestBody); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	book, err := handler.BookRepository.FindById(book_id)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "book not found"})
+		}
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	book.Name = requestBody.Name
+	book.Genre = requestBody.Genre
+	book.Author = requestBody.Author
+	book.PublishedDate = requestBody.PublishedDate
+	book.Stock = requestBody.Stock
+	book.Price = requestBody.Price
+
+	if err := handler.BookRepository.Update(book); err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	return c.Status(http.StatusOK).JSON(fiber.Map{
+		"message": "Successfully update book",
+		"data":    book,
+	})
 }
 
 func (handler *BookHandler) Delete(c *fiber.Ctx) error {

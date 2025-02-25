@@ -14,7 +14,7 @@ func NewRoute(app *fiber.App, uh handler.UserHandler, bh handler.BookHandler) {
 
 	books := app.Group("/books", middleware.CustomJwtMiddleware())
 	books.Post("/", bh.Create)
-	books.Put("/", bh.Update)
+	books.Put("/:id", bh.Update)
 	books.Delete("/", bh.Delete)
 	books.Get("/", bh.FindAll)
 	books.Get("/:id", bh.FindById)

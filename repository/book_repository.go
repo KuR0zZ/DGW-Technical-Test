@@ -33,6 +33,13 @@ func (repository *BookRepositoryImpl) Create(book *entity.Book) error {
 }
 
 func (repository *BookRepositoryImpl) Update(book *entity.Book) error {
+	query := "UPDATE Books SET name = $1, genre = $2, author = $3, published_date = $4, stock = $5, price = $6 WHERE id = $7"
+
+	_, err := repository.DB.Exec(query, book.Name, book.Genre, book.Author, book.PublishedDate, book.Stock, book.Price, book.ID)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -45,5 +52,12 @@ func (repository *BookRepositoryImpl) FindAll() ([]entity.Book, error) {
 }
 
 func (repository *BookRepositoryImpl) FindById(bookId int) (*entity.Book, error) {
-	return nil, nil
+	query := "SELECT * FROM Books WHERE id = $1"
+
+	book := new(entity.Book)
+	if err := repository.DB.Get(book, query, bookId); err != nil {
+		return nil, err
+	}
+
+	return book, nil
 }
