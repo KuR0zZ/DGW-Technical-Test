@@ -13,3 +13,8 @@ type UserRegisterResponse struct {
 	Email    string `json:"email"`
 	Role     string `json:"role"`
 }
+
+type UserLoginRequest struct {
+	Username string `json:"username" validate:"required"`
+	Password string `json:"password" validate:"required"`
+}
