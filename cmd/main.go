@@ -25,7 +25,10 @@ func main() {
 	userRepository := repository.NewUserRepository(db)
 	userHandler := handler.NewUserHandler(userRepository, validate)
 
-	routes.NewRoute(app, *userHandler)
+	bookRepository := repository.NewBookRepository(db)
+	bookHandler := handler.NewBookHandler(bookRepository, validate)
+
+	routes.NewRoute(app, *userHandler, *bookHandler)
 
 	errChan := make(chan error, 1)
 	stopChan := make(chan os.Signal, 1)
