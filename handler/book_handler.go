@@ -161,7 +161,12 @@ func (handler *BookHandler) Delete(c *fiber.Ctx) error {
 }
 
 func (handler *BookHandler) FindAll(c *fiber.Ctx) error {
-	return nil
+	books, err := handler.BookRepository.FindAll()
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(books)
 }
 
 func (handler *BookHandler) FindById(c *fiber.Ctx) error {

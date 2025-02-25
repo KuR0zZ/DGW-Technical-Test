@@ -60,7 +60,14 @@ func (repository *BookRepositoryImpl) Delete(bookId int) error {
 }
 
 func (repository *BookRepositoryImpl) FindAll() ([]entity.Book, error) {
-	return nil, nil
+	query := "SELECT * FROM Books"
+
+	var books []entity.Book
+	if err := repository.DB.Select(&books, query); err != nil {
+		return nil, err
+	}
+
+	return books, nil
 }
 
 func (repository *BookRepositoryImpl) FindById(bookId int) (*entity.Book, error) {
