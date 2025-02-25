@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"database/sql"
 	"dgw-technical-test/entity"
 
 	"github.com/jmoiron/sqlx"
@@ -44,6 +45,17 @@ func (repository *BookRepositoryImpl) Update(book *entity.Book) error {
 }
 
 func (repository *BookRepositoryImpl) Delete(bookId int) error {
+	query := "DELETE FROM Books WHERE id = $1"
+
+	result, err := repository.DB.Exec(query, bookId)
+	if err != nil {
+		return err
+	}
+
+	if rows, _ := result.RowsAffected(); rows == 0 {
+		return sql.ErrNoRows
+	}
+
 	return nil
 }
 

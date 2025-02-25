@@ -6,11 +6,12 @@ import (
 	"dgw-technical-test/entity"
 	"dgw-technical-test/repository"
 	"errors"
-	"net/http"
+	"fmt"
 	"strconv"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
+	"github.com/golang-jwt/jwt/v5"
 )
 
 type BookHandler struct {
@@ -34,6 +35,17 @@ func (handler *BookHandler) Create(c *fiber.Ctx) error {
 
 	if err := handler.Validate.Struct(requestBody); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	claims, ok := c.Locals("user").(jwt.MapClaims)
+	if !ok {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to retrieve claims from token"})
+	}
+
+	userRole := claims["role"].(string)
+
+	if userRole != "Admin" {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "need admin role to perform this action"})
 	}
 
 	book := &entity.Book{
@@ -68,7 +80,7 @@ func (handler *BookHandler) Create(c *fiber.Ctx) error {
 func (handler *BookHandler) Update(c *fiber.Ctx) error {
 	id := c.Params("id")
 
-	book_id, err := strconv.Atoi(id)
+	bookId, err := strconv.Atoi(id)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
@@ -83,7 +95,18 @@ func (handler *BookHandler) Update(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
 	}
 
-	book, err := handler.BookRepository.FindById(book_id)
+	claims, ok := c.Locals("user").(jwt.MapClaims)
+	if !ok {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to retrieve claims from token"})
+	}
+
+	userRole := claims["role"].(string)
+
+	if userRole != "Admin" {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "need admin role to perform this action"})
+	}
+
+	book, err := handler.BookRepository.FindById(bookId)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "book not found"})
@@ -102,14 +125,39 @@ func (handler *BookHandler) Update(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
 
-	return c.Status(http.StatusOK).JSON(fiber.Map{
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"message": "Successfully update book",
 		"data":    book,
 	})
 }
 
 func (handler *BookHandler) Delete(c *fiber.Ctx) error {
-	return nil
+	id := c.Params("id")
+
+	bookId, err := strconv.Atoi(id)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	claims, ok := c.Locals("user").(jwt.MapClaims)
+	if !ok {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to retrieve claims from token"})
+	}
+
+	userRole := claims["role"].(string)
+
+	if userRole != "Admin" {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "need admin role to perform this action"})
+	}
+
+	if err := handler.BookRepository.Delete(bookId); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "book not found"})
+		}
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{"message": fmt.Sprintf("Successfully deleted book with ID %d", bookId)})
 }
 
 func (handler *BookHandler) FindAll(c *fiber.Ctx) error {
