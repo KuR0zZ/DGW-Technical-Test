@@ -170,5 +170,20 @@ func (handler *BookHandler) FindAll(c *fiber.Ctx) error {
 }
 
 func (handler *BookHandler) FindById(c *fiber.Ctx) error {
-	return nil
+	id := c.Params("id")
+
+	bookId, err := strconv.Atoi(id)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	book, err := handler.BookRepository.FindById(bookId)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "book not found"})
+		}
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(book)
 }
